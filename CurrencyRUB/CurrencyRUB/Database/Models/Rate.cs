@@ -13,15 +13,12 @@ namespace CurrencyRUB
     {
         [MaxLength(10)]
         [MinLength(10)]
-        [Key]
         public string Date { get; set; }
         [MaxLength(3)]
         [MinLength(3)]
-        [Key]
         public string FromCurrency { get; set; }
         [MaxLength(3)]
         [MinLength(3)]
-        [Key]
         public string ToCurrency { get; set; }
         public decimal Value { get; set; }
         

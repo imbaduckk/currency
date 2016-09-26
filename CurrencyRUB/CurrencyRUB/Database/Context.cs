@@ -9,7 +9,7 @@ namespace CurrencyRUB
 {
     class Context:DbContext
     {
-        public Context() : base("Rates")
+        public Context() : base("DBRates4")
         {
 
         }
@@ -18,7 +18,9 @@ namespace CurrencyRUB
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Rate>().Property(p => p.Value)
-                .HasPrecision(3,4);
+                .HasPrecision(6,4);
+            modelBuilder.Entity<Rate>().HasKey(t => new { t.Date, t.FromCurrency, t.ToCurrency });
+           
         }
     }
 }

@@ -15,9 +15,14 @@ namespace CurrencyRUB
         public TodayForm()
         {
             InitializeComponent();
+        }
 
-            Database db = new Database();
-            db.DownloadRate("2016-09-01", "USD", "RUB");
+        Getter getter;
+
+        private void TodayForm_Load(object sender, EventArgs e)
+        {
+            getter = new Getter(this);
+            getter.LoadDataToday();
         }
     }
 }

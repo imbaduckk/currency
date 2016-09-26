@@ -17,7 +17,15 @@ namespace CurrencyRUB
             
         }
 
-        public int DownloadRate(string date,string fromCur, string toCur)
+        public decimal TryGetValue(Context cxt, string date, string fromCur, string toCur)
+        {
+                if (!ContainsRate(cxt, new Rate() { Date = date, FromCurrency = fromCur, ToCurrency = toCur }))
+                    DownloadRate(cxt, date, fromCur, toCur);
+            
+            return cxt.Rates.Select(x=>x).Where(x=> (x.Date==date)&&(x.FromCurrency==fromCur)&&(x.ToCurrency==toCur)).First().Value;
+        }
+
+        public int DownloadRate(Context cxt, string date,string fromCur, string toCur)
         {
             int count = 0;
             string url = string.Format("http://api.fixer.io/{0}?base={1}&symbols={2}", date, fromCur, toCur);
@@ -26,45 +34,50 @@ namespace CurrencyRUB
             using (var reader = new StreamReader(stream))
             {
                 var jObject = Newtonsoft.Json.Linq.JObject.Parse(reader.ReadLine());
-                Console.WriteLine((string)jObject["rates"][toCur]);
+                decimal val = (decimal)(jObject["rates"][toCur]);
+                TryAddRate(cxt, new Rate() { Date = date, FromCurrency = fromCur, ToCurrency = toCur, Value = val });
             }
 
             return count;
         }
 
-        public bool CheckRate(Rate rate)
+        public bool ContainsRate(Context cxt, Rate rate)
         {
-            using (var cxt = new Context())
-            {
-                return cxt.Rates.Select(x => x.Equals(rate)).Count() > 0;
-            }
+            return (cxt.Rates.Select(x => x).Where(x=>(x.Date == rate.Date)
+            && (x.FromCurrency == rate.FromCurrency)
+            && (x.ToCurrency == rate.ToCurrency))).Count()>0;
         }
 
-        public void TryAddRate(Rate rate)
+        public void TryAddRate(Context cxt, Rate rate)
         {
-            using (var cxt = new Context())
+            if (!ContainsRate(cxt, rate))
             {
                 cxt.Rates.Add(rate);
                 cxt.SaveChanges();
             }
+
         }
 
-        public void AddRate(Rate rate)
+        public void AddRate(Context cxt, Rate rate)
         {
-            using (var cxt = new Context())
-            {
-                cxt.Rates.Add(rate);
-                cxt.SaveChanges();
-            }
+            cxt.Rates.Add(rate);
+            cxt.SaveChanges();
         }
 
-        public void AddRates(IEnumerable<Rate> rates)
+        public void AddRates(Context cxt, IEnumerable<Rate> rates)
         {
-            using (var cxt = new Context())
-            {
                 cxt.Rates.AddRange(rates);
                 cxt.SaveChanges();
+            
+        }
+
+        public bool Equals(Rate x, Rate y)
+        {
+            if ((x.Date == y.Date) && (x.FromCurrency == y.FromCurrency) && (x.ToCurrency == y.ToCurrency))
+            {
+                return true;
             }
+            else { return false; }
         }
     }
 }
